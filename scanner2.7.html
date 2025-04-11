@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reverse Logistics Scanner</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&family=Roboto&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #f4f4f4;
+      --text: #222;
+      --primary: #0078D7;
+      --card: #fff;
+      --input-bg: #fff;
+      --result-bg: #f0f0f0;
+      --shadow: rgba(0, 0, 0, 0.1);
+      --transition-speed: 0.3s;
+    }
+
+    [data-theme="dark"] {
+      --bg: #121212;
+      --text: #e0e0e0;
+      --primary: #4db8ff;
+      --card: #1e1e1e;
+      --input-bg: #2b2b2b;
+      --result-bg: #2a2a2a;
+      --shadow: rgba(0, 0, 0, 0.4);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans', 'Roboto', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      transition: background-color var(--transition-speed), color var(--transition-speed);
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 60px auto 40px;
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: 0 6px 20px var(--shadow);
+      padding: 25px 30px;
+      position: relative;
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--primary);
+      margin-top: 0;
+      font-size: 26px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    input[type="file"],
+    button {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: var(--input-bg);
+      color: var(--text);
+      transition: background-color var(--transition-speed), color var(--transition-speed);
+    }
+
+    input[type="file"]::file-selector-button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+
+    .fileLabel {
+      font-size: 13px;
+      font-style: italic;
+      color: var(--text);
+      margin-top: 4px;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      font-size: 16px;
+      margin-top: 10px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #005bb5;
+      transform: translateY(-1px);
+    }
+
+    .checkbox {
+      display: flex;
+      align-items: center;
+      margin-top: 15px;
+    }
+
+    .checkbox input[type="checkbox"] {
+      appearance: none;
+      width: 38px;
+      height: 20px;
+      background-color: #ccc;
+      border-radius: 12px;
+      position: relative;
+      outline: none;
+      transition: background-color 0.2s;
+      cursor: pointer;
+    }
+
+    .checkbox input[type="checkbox"]::before {
+      content: "";
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      top: 2px;
+      left: 2px;
+      background-color: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+
+    .checkbox input[type="checkbox"]:checked {
+      background-color: var(--primary);
+    }
+
+    .checkbox input[type="checkbox"]:checked::before {
+      transform: translateX(18px);
+    }
+
+    .checkbox label {
+      margin-left: 10px;
+      font-weight: normal;
+    }
+
+    .results {
+      margin-top: 20px;
+      background: var(--result-bg);
+      padding: 15px;
+      border-radius: 6px;
+      transition: background-color var(--transition-speed);
+    }
+
+    .results p {
+      margin: 5px 0;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .logo img {
+      width: 140px;
+    }
+
+    #notFoundMessage {
+      color: #ff4c4c;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    #exitInstructions {
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      color: #ff4444;
+      background: rgba(255, 0, 0, 0.1);
+      padding: 8px;
+      border-radius: 6px;
+      margin: 10px 0 20px;
+    }
+
+    #themeToggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 2px 8px var(--shadow);
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      transition: background-color var(--transition-speed), color var(--transition-speed);
+      z-index: 999;
+    }
+
+    #pdfSection {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: white;
+    }
+
+    #pdfFrame {
+      width: 794px;
+      height: 1123px;
+      border: none;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #pdfSection, #pdfSection * {
+        visibility: visible !important;
+      }
+      #pdfSection {
+        display: flex !important;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<button id="themeToggle" title="Toggle dark mode">🌙</button>
+
+<div id="pdfSection">
+  <iframe id="pdfFrame" src=""></iframe>
+</div>
+
+<div class="container" id="scannerUI">
+  <div class="logo">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9rOzoaEV_tkLCQfzDCXze85E6Q6bl6TFO2Q&s" alt="Logo">
+  </div>
+
+  <div id="exitInstructions">
+    Press <strong>ALT + F4</strong> to exit scanner kiosk mode
+  </div>
+
+  <h1>Reverse Logistics Scanner</h1>
+
+  <div class="form-group">
+    <label for="fileInput">Upload Excel File:</label>
+    <input type="file" id="fileInput" accept=".xlsx">
+    <div id="fileNameLabel" class="fileLabel" style="display:none;"></div>
+  </div>
+
+  <div class="form-group">
+    <label for="labelInput">Scan Label:</label>
+    <input type="text" id="labelInput" placeholder="Enter label...">
+  </div>
+
+  <button id="searchButton">Search</button>
+
+  <div class="checkbox">
+    <input type="checkbox" id="autoPrintCheckbox" checked>
+    <label for="autoPrintCheckbox">AutoPrint</label>
+  </div>
+
+  <div class="results" id="results" style="display: none;">
+    <p><strong>Batch:</strong> <span id="batchDisplay"></span></p>
+    <p><strong>New Label:</strong> <a id="labelLink" href="#" target="_blank">Open Link</a></p>
+  </div>
+
+  <div id="notFoundMessage" style="display: none;">Shipment not found</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const pdfToPrint = params.get("pdf");
+
+  if (pdfToPrint) {
+    document.getElementById("scannerUI").style.display = "none";
+    const section = document.getElementById("pdfSection");
+    const iframe = document.getElementById("pdfFrame");
+    section.style.display = "flex";
+    iframe.src = decodeURIComponent(pdfToPrint);
+
+    iframe.onload = () => {
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => {
+          window.location.href = window.location.pathname;
+        }, 500);
+      }, 300);
+    };
+  }
+
+  const themeToggle = document.getElementById("themeToggle");
+  function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+    themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
+  }
+  const savedTheme = localStorage.getItem("theme") || "light";
+  applyTheme(savedTheme);
+  themeToggle.onclick = () => {
+    const current = document.documentElement.getAttribute("data-theme");
+    applyTheme(current === "light" ? "dark" : "light");
+  };
+
+  let excelData = [], searchColumns = [], batchIndex = -1, newLabelIndex = -1;
+  const saved = localStorage.getItem("excelState");
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    excelData = parsed.excelData;
+    searchColumns = parsed.searchColumns;
+    batchIndex = parsed.batchIndex;
+    newLabelIndex = parsed.newLabelIndex;
+    if (parsed.fileName) {
+      const label = document.getElementById('fileNameLabel');
+      label.textContent = `Loaded: ${parsed.fileName}`;
+      label.style.display = 'block';
+    }
+  }
+
+  document.getElementById('fileInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) return alert("No file selected.");
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+      const headers = rows[0].map(h => h.toString().trim().toLowerCase());
+      batchIndex = headers.indexOf("return batch no");
+      newLabelIndex = headers.indexOf("new label");
+      searchColumns = headers.map((h, i) => (h !== "return batch no" && h !== "new label" ? i : -1)).filter(i => i !== -1);
+      excelData = rows.slice(1);
+
+      localStorage.setItem("excelState", JSON.stringify({
+        excelData,
+        searchColumns,
+        batchIndex,
+        newLabelIndex,
+        fileName: file.name
+      }));
+
+      const label = document.getElementById('fileNameLabel');
+      label.textContent = `Loaded: ${file.name}`;
+      label.style.display = 'block';
+
+      alert('Excel file loaded successfully!');
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+  document.getElementById('searchButton').addEventListener('click', handleSearch);
+  document.getElementById('labelInput').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleSearch();
+    }
+  });
+
+  function handleSearch() {
+    const input = document.getElementById('labelInput').value.trim();
+    if (!input) return alert('Please enter a label!');
+    const resultsDiv = document.getElementById('results');
+    const notFoundMessage = document.getElementById('notFoundMessage');
+    const autoPrint = document.getElementById('autoPrintCheckbox').checked;
+
+    const result = excelData.find(row => searchColumns.some(col => row[col] == input));
+
+    if (result) {
+      const batch = batchIndex !== -1 ? (result[batchIndex] || 'N/A') : 'N/A';
+      const link = newLabelIndex !== -1 ? (result[newLabelIndex] || '#') : '#';
+      document.getElementById('batchDisplay').textContent = batch;
+      const linkEl = document.getElementById('labelLink');
+      linkEl.href = link;
+      linkEl.textContent = link !== '#' ? 'Print' : 'No Link Available';
+
+      resultsDiv.style.display = 'block';
+      notFoundMessage.style.display = 'none';
+
+      if (autoPrint && link !== '#') {
+        window.location.href = `${window.location.pathname}?pdf=${encodeURIComponent(link)}`;
+      }
+    } else {
+      resultsDiv.style.display = 'none';
+      notFoundMessage.style.display = 'block';
+    }
+  }
+</script>
+
+</body>
+</html>
