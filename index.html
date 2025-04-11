@@ -294,26 +294,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-  const params = new URLSearchParams(window.location.search);
-  const pdfToPrint = params.get("pdf");
-
-  if (pdfToPrint) {
-    document.getElementById("scannerUI").style.display = "none";
-    const section = document.getElementById("pdfSection");
-    const iframe = document.getElementById("pdfFrame");
-    section.style.display = "flex";
-    iframe.src = decodeURIComponent(pdfToPrint);
-
-    iframe.onload = () => {
-      setTimeout(() => {
-        window.print();
-        setTimeout(() => {
-          window.location.href = window.location.pathname;
-        }, 500);
-      }, 300);
-    };
-  }
-
   const themeToggle = document.getElementById("themeToggle");
   function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
@@ -383,7 +363,7 @@
     }
   });
 
-  function handleSearch() {
+  async function handleSearch() {
     const input = document.getElementById('labelInput').value.trim();
     if (!input) return alert('Please enter a label!');
     const resultsDiv = document.getElementById('results');
@@ -394,17 +374,42 @@
 
     if (result) {
       const batch = batchIndex !== -1 ? (result[batchIndex] || 'N/A') : 'N/A';
-      const link = newLabelIndex !== -1 ? (result[newLabelIndex] || '#') : '#';
-      document.getElementById('batchDisplay').textContent = batch;
       const linkEl = document.getElementById('labelLink');
-      linkEl.href = link;
-      linkEl.textContent = link !== '#' ? 'Print' : 'No Link Available';
+      document.getElementById('batchDisplay').textContent = batch;
+      linkEl.href = "#";
+      linkEl.textContent = 'Print Ready';
 
       resultsDiv.style.display = 'block';
       notFoundMessage.style.display = 'none';
 
-      if (autoPrint && link !== '#') {
-        window.location.href = `${window.location.pathname}?pdf=${encodeURIComponent(link)}`;
+      const awbNo = result[6]; // Column G
+
+      if (autoPrint && awbNo) {
+        const pdfUrl = `https://relabelpr-git-main-mihai-tudosas-projects.vercel.app/api/print?awbno=${awbNo}`;
+        try {
+          const res = await fetch(pdfUrl);
+          if (!res.ok) throw new Error("PDF fetch failed");
+          const blob = await res.blob();
+
+          const blobUrl = URL.createObjectURL(blob);
+          const iframe = document.createElement('iframe');
+          iframe.style.display = 'none';
+          iframe.src = blobUrl;
+
+          document.body.appendChild(iframe);
+          iframe.onload = function () {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+          };
+
+          setTimeout(() => {
+            document.body.removeChild(iframe);
+            URL.revokeObjectURL(blobUrl);
+          }, 10000);
+        } catch (err) {
+          alert("Failed to fetch or print the PDF.");
+          console.error(err);
+        }
       }
     } else {
       resultsDiv.style.display = 'none';
@@ -412,6 +417,7 @@
     }
   }
 </script>
+
 
 </body>
 </html>
